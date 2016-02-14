@@ -2,10 +2,24 @@ ElasticMongo
 ===========  
 ElasticMongo is a project to compare PyMongo with ElasticSearch. This benchmark shows the performance of both connectors.
 
+ElasticSearch  
+--------------  
+Installed in C:\elasticsearch-2.1.1\bin  
 
-MongoDB    
+data:  
+	C:\elasticsearch-2.1.1\data  
+
+
+Kibana  
+-------  
+Kibana is installed in C:\kibana-4.3.1-windows\bin  
+
+Results are available in http://localhost:5601  
+
+
+MongoDB  
 --------  
-C:\Program Files\MongoDB\Server\3.2\bin
+Installed in C:\Program Files\MongoDB\Server\3.2\bin
 
 start server:  
 	"C:\Program Files\MongoDB\Server\3.2\bin"\mongod  
