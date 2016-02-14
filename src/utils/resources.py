@@ -12,6 +12,10 @@ class ElasticMongo(object):
     Class with information for elastic and mongo collections.
     '''
 
+    # type fields
+    ELASTIC_TYPE_BODY = 'body'
+    ELASTIC_TYPE_TO = "headers.To"
+
     entries = [
         {
             "body": '''
