@@ -29,6 +29,9 @@ start client:
 	
 data:  
 	C:\data\db  
-	
+	 
+clean cache in mongo:  
+	db.demo.getPlanCache().clear()  
+  
 To use '$text' search, a text index has been create on body field
 db.mongo.createIndex( { body: "text" } )

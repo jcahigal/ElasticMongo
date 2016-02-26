@@ -15,6 +15,8 @@ class ElasticMongo(object):
     # type fields
     ELASTIC_TYPE_BODY = 'body'
     ELASTIC_TYPE_TO = "headers.To"
+    ELASTIC_TYPE_SUBJECT = "headers.Subject"
+    CREATION_LABEL = "creation"
 
     entries = [
         {
@@ -32,7 +34,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-12-13T14:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton1@enron.com",
                     "Message-ID": "<8147308.1075851042328.JavaMail.evans@thyme>",
                     "Subject": "wiki MongoDB def",
                     "To": [
@@ -56,7 +58,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-12-13T16:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton2@enron.com",
                     "Message-ID": "<8147308.1075851042329.JavaMail.evans@thyme>",
                     "Subject": "wiki mongoDB history",
                     "To": [
@@ -83,7 +85,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-02-02T11:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton3@enron.com",
                     "Message-ID": "<8147308.1075851042330.JavaMail.evans@thyme>",
                     "Subject": "wiki elasticsearch def",
                     "To": [
@@ -106,7 +108,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-02-02T14:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton4@enron.com",
                     "Message-ID": "<8147308.1075851042331.JavaMail.evans@thyme>",
                     "Subject": "wiki elasticsearch history",
                     "To": [
@@ -130,7 +132,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-02-02T16:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton5@enron.com",
                     "Message-ID": "<8147308.1075851042332.JavaMail.evans@thyme>",
                     "Subject": "wiki elasticsearch sumary",
                     "To": [
@@ -154,7 +156,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-12-30T10:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton6@enron.com",
                     "Message-ID": "<8147308.1075851042333.JavaMail.evans@thyme>",
                     "Subject": "wiki big data def",
                     "To": [
@@ -178,7 +180,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-12-30T12:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton7@enron.com",
                     "Message-ID": "<8147308.1075851042334.JavaMail.evans@thyme>",
                     "Subject": "wiki big data tec",
                     "To": [
@@ -206,7 +208,7 @@ class ElasticMongo(object):
                     "Content-Transfer-Encoding": "7bit",
                     "Content-Type": "text/plain; charset=us-ascii",
                     "Date": "2015-12-30T14:47:00Z",
-                    "From": "donna.fulton@enron.com",
+                    "From": "donna.fulton8@enron.com",
                     "Message-ID": "<8147308.1075851042335.JavaMail.evans@thyme>",
                     "Subject": "wiki big data cap",
                     "To": [

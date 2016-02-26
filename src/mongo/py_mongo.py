@@ -7,8 +7,11 @@ Created on 14/01/2016
 from __future__ import unicode_literals
 import argparse
 from pymongo import MongoClient
+from pymongo import ASCENDING
 from datetime import datetime
 from utils.resources import ElasticMongo
+
+NUM_RESULTS = 2
 
 
 class MongoConnection(object):
@@ -87,16 +90,43 @@ class MongoConnection(object):
 
         text_search = {
                       "$text":
-                        {
+                      {
                           "$search": word,
                           "$caseSensitive": False,
                           "$diacriticSensitive": False
-                        }
+                      }
                     }
-        #return mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_BODY: word}, {ElasticMongo.ELASTIC_TYPE_BODY: 1, "_id": 0})
+        # return mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_BODY: word}, {ElasticMongo.ELASTIC_TYPE_BODY: 1, "_id": 0})
         return mongo_con.mongo.find(text_search,
                                     {ElasticMongo.ELASTIC_TYPE_BODY: 1, "_id": 0})
 
+    @staticmethod
+    def get_word_in_body_complex(mongo_con, word, sort_field, num_results):
+        '''
+        Get all documents with a particular word in its body (op 4).
+
+        :args:
+            mongo_con - ElastisSearch connector
+            word word - to find in body
+            sort_field - sort by this field
+            num_results - number of results to return
+
+        :return:
+            Mongo bodies resulting documents
+        '''
+
+        text_search = {
+                      "$text":
+                      {
+                          "$search": word,
+                          "$caseSensitive": False,
+                          "$diacriticSensitive": False
+                      }
+                    }
+        return mongo_con.mongo.find(text_search,
+                                    {ElasticMongo.ELASTIC_TYPE_SUBJECT: 1, ElasticMongo.CREATION_LABEL: 1, "_id": 0}
+                                    ).sort([(sort_field, ASCENDING)]
+                                           ).limit(num_results)
 
 
 if __name__ == '__main__':
@@ -143,9 +173,21 @@ if __name__ == '__main__':
         word_body = 'humongous'
         time1 = datetime.now()
         bodies = MongoConnection.get_word_in_body(db, word_body)
+        print "collections in mongo with %s word in its body %s" % (word_body, bodies.count())
         time2 = datetime.now()
         result = time2 - time1
-        print "ElastisSearch query time (microseconds): %f" % (result.microseconds)
-        print "collections in mongo with %s word in its body %s" % (word_body, bodies.count())
+        print "MongoDB query time (microseconds): %f" % (result.microseconds)
         if bodies.count > 0:
             print bodies[0]
+
+    if args.op == 0 or args.op == 4:
+        # getting docs with a word in body (complex)
+        word_body = 'Compass'
+        time1 = datetime.now()
+        bodies = MongoConnection.get_word_in_body_complex(db, word_body, ElasticMongo.CREATION_LABEL, NUM_RESULTS)
+        print "collections in mongo with %s word in its body %s" % (word_body, bodies.count())
+        time2 = datetime.now()
+        result = time2 - time1
+        print "MongoDB query time (microseconds): %f" % (result.microseconds)
+        for body in bodies:
+            print body

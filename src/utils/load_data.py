@@ -12,7 +12,7 @@ Mongo
 ElasticSearch
 --------------
 * index 'demo', type 'elastic'
-* drop index with: curl -X DELETE "http://localhost:9200/demo/" 
+* drop index with: curl -X DELETE "http://localhost:9200/demo/"
 
 @author: juanc352 (jchernandez@full-on-net.com)
 '''
@@ -32,7 +32,7 @@ CREATION_LABEL = "creation"
 
 def random_date(start, end):
     """
-    This function will return a random datetime between two datetime 
+    This function will return a random datetime between two datetime
     objects.
     """
     delta = end - start

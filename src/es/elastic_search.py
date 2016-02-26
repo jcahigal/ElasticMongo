@@ -17,6 +17,9 @@ ELASTIC_TOTAL_LABEL = 'total'
 
 ELASTIC_SUGGEST_REQUEST = "demo-suggestion"
 
+ASC_ORDER = "asc"
+NUM_RESULTS = 2
+
 
 class ElasticConnection(object):
     '''
@@ -96,7 +99,7 @@ class ElasticConnection(object):
                 }
             }
         }
-        
+
         query_to = {
                     "query": {
                         "filtered": {
@@ -140,6 +143,37 @@ class ElasticConnection(object):
             }
 
         result = es_con.search(index=ElasticConnection.ES_INDEX, doc_type=ElasticConnection.ES_DOC_TYPE, body=query_to)
+        return result
+
+    @staticmethod
+    def get_word_in_body_complex(es_con, word, sort_field, num_results):
+        '''
+        Get all documents with a particular word in its body (op 4).
+
+        :args:
+            es_con - ElastisSearch connector
+            word word - to find in body
+            sort_field - sort by this field
+            num_results - number of results to return
+
+        :return:
+            ES resulting documents (only body in source)
+        '''
+
+        query_to = {
+                "query": {
+                    "match": {
+                        ElasticMongo.ELASTIC_TYPE_BODY: word
+                    }
+                },
+                "fields": [ElasticMongo.ELASTIC_TYPE_SUBJECT, ElasticMongo.CREATION_LABEL]
+            }
+
+        result = es_con.search(index=ElasticConnection.ES_INDEX,
+                               doc_type=ElasticConnection.ES_DOC_TYPE,
+                               body=query_to,
+                               sort=sort_field,
+                               size=num_results)
         return result
 
     @staticmethod
@@ -195,7 +229,7 @@ if __name__ == '__main__':
         total = ElasticConnection.count_all(es)
         time2 = datetime.now()
         result = time2 - time1
-        print "ElastisSearch query time (microseconds): %f" % (result.microseconds)
+        print "ElastisSearch count time (microseconds): %f" % (result.microseconds)
         print "ElastisSearch count: %s" % (total)
 
     if args.op == 0 or args.op == 2:
@@ -223,6 +257,19 @@ if __name__ == '__main__':
             print body
 
     if args.op == 0 or args.op == 4:
+        # getting docs with a word in body (complex)
+        word_body = 'Compass'
+        sort_request = "%s:%s" % (ElasticMongo.CREATION_LABEL, ASC_ORDER)
+        time1 = datetime.now()
+        bodies = ElasticConnection.get_word_in_body_complex(es, word_body, sort_request, NUM_RESULTS)
+        time2 = datetime.now()
+        result = time2 - time1
+        print "ElastisSearch complex query time (microseconds): %f" % (result.microseconds)
+        print "collections in ES with %s word in its body %s" % (word_body, bodies[ELASTIC_HITS_LABEL][ELASTIC_TOTAL_LABEL])
+        for body in bodies[ELASTIC_HITS_LABEL][ELASTIC_HITS_LABEL]:
+            print body
+
+    if args.op == 0 or args.op == 5:
         # getting suggestions for words in a text
         text = "El desarroyo de MangoDB"
         time1 = datetime.now()
