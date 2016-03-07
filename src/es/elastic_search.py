@@ -11,6 +11,8 @@ from elasticsearch import Elasticsearch
 from utils.resources import ElasticMongo
 import argparse
 
+from conn.connector import Connector
+
 # Elastic result fields
 ELASTIC_HITS_LABEL = 'hits'
 ELASTIC_TOTAL_LABEL = 'total'
@@ -21,7 +23,7 @@ ASC_ORDER = "asc"
 NUM_RESULTS = 2
 
 
-class ElasticConnection(object):
+class ElasticConnection(Connector):
     '''
     Class to manage the connector with ElasticSearch
     '''
@@ -34,7 +36,7 @@ class ElasticConnection(object):
     es = None
 
     @staticmethod
-    def get_elastic_connector():
+    def get_connector():
         '''
         Function to create a mongoDB connector to one DB.
 
@@ -47,39 +49,31 @@ class ElasticConnection(object):
 
         return ElasticConnection.es
 
-    @staticmethod
-    def get_all(es_con):
+    def get_all(self):
         '''
         Return all docs in Elastic.
-
-        :args:
-            es_con ElastisSearch connector
 
         :return:
             ES search with all documents
         '''
+        es_con = ElasticConnection.get_connector()
         return es_con.get(index=ElasticConnection.ES_INDEX, doc_type=ElasticConnection.ES_DOC_TYPE)
 
-    @staticmethod
-    def count_all(es_con):
+    def count_all(self):
         '''
         Return the count of docs in Elastic (op 1).
-
-        :args:
-            es_con ElastisSearch connector
 
         :return:
             count of all documents
         '''
+        es_con = ElasticConnection.get_connector()
         return es_con.count(index=ElasticConnection.ES_INDEX, doc_type=ElasticConnection.ES_DOC_TYPE)
 
-    @staticmethod
-    def get_to_user(es_con, user):
+    def get_to_user(self, user):
         '''
         Get all documents with a particular header To (op 2).
 
         :args:
-            es_con ElastisSearch connector
             user name of the user
 
         :return:
@@ -92,7 +86,7 @@ class ElasticConnection(object):
         query_to = 'headers.To:%s' %(user)
         result = es_con.search(index=ElasticConnection.ES_INDEX, doc_type=ElasticConnection.ES_DOC_TYPE, q=query_to)
         """
-        query_to0 = {
+        query_to = {
             "query": {
                 "match": {
                     ElasticMongo.ELASTIC_TYPE_TO: user
@@ -100,33 +94,15 @@ class ElasticConnection(object):
             }
         }
 
-        query_to = {
-                    "query": {
-                        "filtered": {
-                            'filter': {
-                                "bool": {
-                                    "must": [{
-                                            "term": {
-                                                ElasticMongo.ELASTIC_TYPE_TO: user
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
-
+        es_con = ElasticConnection.get_connector()
         result = es_con.search(index=ElasticConnection.ES_INDEX, doc_type=ElasticConnection.ES_DOC_TYPE, body=query_to)
         return result
 
-    @staticmethod
-    def get_word_in_body(es_con, word):
+    def get_word_in_body(self, word):
         '''
         Get all documents with a particular word in its body (op 3).
 
         :args:
-            es_con ElastisSearch connector
             word word to find in body
 
         :return:
@@ -142,18 +118,16 @@ class ElasticConnection(object):
                 "fields": [ElasticMongo.ELASTIC_TYPE_BODY]
             }
 
+        es_con = ElasticConnection.get_connector()
         result = es_con.search(index=ElasticConnection.ES_INDEX, doc_type=ElasticConnection.ES_DOC_TYPE, body=query_to)
         return result
 
-    @staticmethod
-    def get_word_in_body_complex(es_con, word, sort_field, num_results):
+    def get_word_in_body_complex(self, word, num_results):
         '''
         Get all documents with a particular word in its body (op 4).
 
         :args:
-            es_con - ElastisSearch connector
             word word - to find in body
-            sort_field - sort by this field
             num_results - number of results to return
 
         :return:
@@ -169,20 +143,22 @@ class ElasticConnection(object):
                 "fields": [ElasticMongo.ELASTIC_TYPE_SUBJECT, ElasticMongo.CREATION_LABEL]
             }
 
+        sort_request = "%s:%s" % (ElasticMongo.CREATION_LABEL, ASC_ORDER)
+
+        es_con = ElasticConnection.get_connector()
+
         result = es_con.search(index=ElasticConnection.ES_INDEX,
                                doc_type=ElasticConnection.ES_DOC_TYPE,
                                body=query_to,
-                               sort=sort_field,
+                               sort=sort_request,
                                size=num_results)
         return result
 
-    @staticmethod
-    def get_suggestion(es_con, text):
+    def get_suggestion(self, text):
         '''
         Suggest similar looking terms based on a provided text(op 5).
 
         :args:
-            es_con ElastisSearch connector
             text text for suggestion
 
         :return:
@@ -197,9 +173,33 @@ class ElasticConnection(object):
                     }
                   }
                 }
-
+        es_con = ElasticConnection.get_connector()
         result = es_con.suggest(index=ElasticConnection.ES_INDEX, body=suggest)
         return result
+
+    def print_result(self, query, res, num=0):
+        '''
+        print result for elastic connector
+
+        :args:
+            query - name
+            res - query results
+            num - number of results to print
+        '''
+        if res:
+            total = res[ELASTIC_HITS_LABEL][ELASTIC_TOTAL_LABEL]
+            print "Collections in ES for %s has had %s results." % (query, total)
+
+            if num == 0:
+                num_iter = total - 1
+            else:
+                if num >= total:
+                    num_iter = total - 1
+                else:
+                    num_iter = num
+
+            for i in range(0, num_iter):
+                print res[ELASTIC_HITS_LABEL][ELASTIC_HITS_LABEL][i]
 
 
 if __name__ == '__main__':
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     Getting time from different Elastic operations.
 
     :args:
-    operation: 0 all, 1 count, 2 to, 3 word
+        operation: 0 all, 1 count, 2 to, 3 word
     '''
     # reading args
     parser = argparse.ArgumentParser(description='Demo launcher',
@@ -221,59 +221,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # getting ElastisSearch connector
-    es = ElasticConnection.get_elastic_connector()
-
-    if args.op == 0 or args.op == 1:
-        # count all
-        time1 = datetime.now()
-        total = ElasticConnection.count_all(es)
-        time2 = datetime.now()
-        result = time2 - time1
-        print "ElastisSearch count time (microseconds): %f" % (result.microseconds)
-        print "ElastisSearch count: %s" % (total)
-
-    if args.op == 0 or args.op == 2:
-        # getting docs with a mail in 'to' list
-        to_user = 'steven.kean@enron.com'
-        time1 = datetime.now()
-        tos = ElasticConnection.get_to_user(es, to_user)
-        time2 = datetime.now()
-        result = time2 - time1
-        print "ElastisSearch query time (microseconds): %f" % (result.microseconds)
-        print "collections in ES with %s header to %s" % (to_user, tos[ELASTIC_HITS_LABEL][ELASTIC_TOTAL_LABEL])
-        if len(tos[ELASTIC_HITS_LABEL][ELASTIC_HITS_LABEL]) > 0:
-            print tos[0]
-
-    if args.op == 0 or args.op == 3:
-        # getting docs with a word in body
-        word_body = 'humongous'
-        time1 = datetime.now()
-        bodies = ElasticConnection.get_word_in_body(es, word_body)
-        time2 = datetime.now()
-        result = time2 - time1
-        print "ElastisSearch query time (microseconds): %f" % (result.microseconds)
-        print "collections in ES with %s word in its body %s" % (word_body, bodies[ELASTIC_HITS_LABEL][ELASTIC_TOTAL_LABEL])
-        for body in bodies[ELASTIC_HITS_LABEL][ELASTIC_HITS_LABEL]:
-            print body
-
-    if args.op == 0 or args.op == 4:
-        # getting docs with a word in body (complex)
-        word_body = 'Compass'
-        sort_request = "%s:%s" % (ElasticMongo.CREATION_LABEL, ASC_ORDER)
-        time1 = datetime.now()
-        bodies = ElasticConnection.get_word_in_body_complex(es, word_body, sort_request, NUM_RESULTS)
-        time2 = datetime.now()
-        result = time2 - time1
-        print "ElastisSearch complex query time (microseconds): %f" % (result.microseconds)
-        print "collections in ES with %s word in its body %s" % (word_body, bodies[ELASTIC_HITS_LABEL][ELASTIC_TOTAL_LABEL])
-        for body in bodies[ELASTIC_HITS_LABEL][ELASTIC_HITS_LABEL]:
-            print body
+    es = ElasticConnection()
 
     if args.op == 0 or args.op == 5:
         # getting suggestions for words in a text
         text = "El desarroyo de MangoDB"
         time1 = datetime.now()
-        suggestions = ElasticConnection.get_suggestion(es, text)
+        suggestions = es.get_suggestion(text)
         time2 = datetime.now()
         result = time2 - time1
         print "ElastisSearch suggest time (microseconds): %f" % (result.microseconds)

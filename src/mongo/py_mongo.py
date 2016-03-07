@@ -5,23 +5,23 @@ Created on 14/01/2016
 @author: juanc352 (jchernandez@full-on-net.com)
 '''
 from __future__ import unicode_literals
-import argparse
 from pymongo import MongoClient
 from pymongo import ASCENDING
-from datetime import datetime
+
 from utils.resources import ElasticMongo
+from conn.connector import Connector
 
 NUM_RESULTS = 2
 
 
-class MongoConnection(object):
+class MongoConnection(Connector):
     '''
     Class to manage the connector with mongoBD
     '''
     db = None
 
     @staticmethod
-    def get_mongo_connector():
+    def get_connector():
         '''
         Function to create a mongoDB connector to one DB.
 
@@ -35,53 +35,46 @@ class MongoConnection(object):
             MongoConnection.db = client.demo
         return MongoConnection.db
 
-    @staticmethod
-    def get_all(mongo_con):
+    def get_all(self):
         '''
         Return all elements in mongoDB.
-
-        :args:
-            mongo_con MongoDB connector
 
         :return:
             JSON with all documents
         '''
+        mongo_con = MongoConnection.get_connector()
         mongo_con.mongo.find()
 
-    @staticmethod
-    def count_all(mongo_con):
+    def count_all(self):
         '''
         Return the count of docs in mongoDB (op 1).
-
-        :args:
-            mongo_con MongoDB connector
 
         :return:
             count of all documents
         '''
+        mongo_con = MongoConnection.get_connector()
         return mongo_con.mongo.count()
 
-    @staticmethod
-    def get_to_user(mongo_con, user):
+    def get_to_user(self, user):
         '''
         Get all documents with a particular header To (op 2).
 
         :args:
-            mongo_con MongoDB connector
             user name of the user
 
         :return:
             JSON with resulting entries
         '''
-        return mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_TO: user})
+        mongo_con = MongoConnection.get_connector()
+        res = mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_TO: user})
+        print res.count
+        return res
 
-    @staticmethod
-    def get_word_in_body(mongo_con, word):
+    def get_word_in_body(self, word):
         '''
         Get all documents with a particular word in its body (op 3).
 
         :args:
-            mongo_con ElastisSearch connector
             word word to find in body
 
         :return:
@@ -96,19 +89,19 @@ class MongoConnection(object):
                           "$diacriticSensitive": False
                       }
                     }
+        mongo_con = MongoConnection.get_connector()
         # return mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_BODY: word}, {ElasticMongo.ELASTIC_TYPE_BODY: 1, "_id": 0})
-        return mongo_con.mongo.find(text_search,
-                                    {ElasticMongo.ELASTIC_TYPE_BODY: 1, "_id": 0})
+        res = mongo_con.mongo.find(text_search,
+                                   {ElasticMongo.ELASTIC_TYPE_BODY: 1, "_id": 0})
+        print res.count
+        return res
 
-    @staticmethod
-    def get_word_in_body_complex(mongo_con, word, sort_field, num_results):
+    def get_word_in_body_complex(self, word, num_results):
         '''
         Get all documents with a particular word in its body (op 4).
 
         :args:
-            mongo_con - ElastisSearch connector
             word word - to find in body
-            sort_field - sort by this field
             num_results - number of results to return
 
         :return:
@@ -123,71 +116,34 @@ class MongoConnection(object):
                           "$diacriticSensitive": False
                       }
                     }
-        return mongo_con.mongo.find(text_search,
-                                    {ElasticMongo.ELASTIC_TYPE_SUBJECT: 1, ElasticMongo.CREATION_LABEL: 1, "_id": 0}
-                                    ).sort([(sort_field, ASCENDING)]
-                                           ).limit(num_results)
+        mongo_con = MongoConnection.get_connector()
+        res = mongo_con.mongo.find(text_search,
+                                   {ElasticMongo.ELASTIC_TYPE_SUBJECT: 1, ElasticMongo.CREATION_LABEL: 1, "_id": 0}
+                                   ).sort([(ElasticMongo.CREATION_LABEL, ASCENDING)]
+                                          ).limit(num_results)
+        print res.count
+        return res
 
+    def print_result(self, query, res, num=0):
+        '''
+        print result for mongo connector
 
-if __name__ == '__main__':
-    '''
-    Getting time from different mongo operations
-    '''
-    # reading args
-    parser = argparse.ArgumentParser(description='Demo launcher',
-                                     add_help='execute this script with only one integer argument: the number on entries')
-    parser.add_argument('--operation',
-                        '-op',
-                        dest='op',
-                        type=int,
-                        help='index of the operation to run, 0 to all',
-                        required=True)
-    args = parser.parse_args()
+        :args:
+            query - name
+            res - query results
+            num - number of results to print
+        '''
+        if res:
+            total = res.count()
+            print "Collections in mongoDB for %s tiene %s resultados." % (query, total)
 
-    # getting mongo connector
-    db = MongoConnection.get_mongo_connector()
+            if num == 0:
+                num_iter = total - 1
+            else:
+                if num >= total:
+                    num_iter = total - 1
+                else:
+                    num_iter = num
 
-    if args.op == 0 or args.op == 1:
-        # count
-        time1 = datetime.now()
-        total = MongoConnection.count_all(db)
-        time2 = datetime.now()
-        result = time2 - time1
-        print "MongoDB query time (microseconds): %f" % (result.microseconds)
-        print "Mongo count: %s" % (total)
-
-    elif args.op == 0 or args.op == 2:
-        # getting docs with a mail in 'to' list
-        to_user = 'steven.kean@enron.com'
-        time1 = datetime.now()
-        tos = MongoConnection.get_to_user(db, to_user)
-        time2 = datetime.now()
-        result = time2 - time1
-        print "MongoDB query time (microseconds): %f" % (result.microseconds)
-        print "Collections in mongo with %s header to %s" % (to_user, tos.count())
-        if tos.count > 0:
-            print tos[0]
-
-    if args.op == 0 or args.op == 3:
-        # getting docs with a word in body
-        word_body = 'humongous'
-        time1 = datetime.now()
-        bodies = MongoConnection.get_word_in_body(db, word_body)
-        print "collections in mongo with %s word in its body %s" % (word_body, bodies.count())
-        time2 = datetime.now()
-        result = time2 - time1
-        print "MongoDB query time (microseconds): %f" % (result.microseconds)
-        if bodies.count > 0:
-            print bodies[0]
-
-    if args.op == 0 or args.op == 4:
-        # getting docs with a word in body (complex)
-        word_body = 'Compass'
-        time1 = datetime.now()
-        bodies = MongoConnection.get_word_in_body_complex(db, word_body, ElasticMongo.CREATION_LABEL, NUM_RESULTS)
-        print "collections in mongo with %s word in its body %s" % (word_body, bodies.count())
-        time2 = datetime.now()
-        result = time2 - time1
-        print "MongoDB query time (microseconds): %f" % (result.microseconds)
-        for body in bodies:
-            print body
+            for i in range(0, num_iter):
+                print res[i]

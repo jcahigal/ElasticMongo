@@ -62,9 +62,9 @@ if __name__ == '__main__':
                         required=False)
     args = parser.parse_args()
 
-    db = MongoConnection.get_mongo_connector()
+    db = MongoConnection.get_connector()
     total_entries = len(ElasticMongo.entries)
-    es = ElasticConnection.get_elastic_connector()
+    es = ElasticConnection.get_connector()
 
     # it simulate a creation date for new entries
     start_date = datetime.strptime('01/01/2013 0:30', '%d/%m/%Y %H:%M')
