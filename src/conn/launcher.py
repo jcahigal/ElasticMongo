@@ -93,10 +93,10 @@ if __name__ == '__main__':
         to_user = 'steven.kean@enron.com'
         time1 = datetime.now()
         tos = conn.get_to_user(to_user)
+        conn.print_result('get_to_user', tos, num=1)
         time2 = datetime.now()
         result = time2 - time1
         print "%s query time (microseconds): %f" % (conn_name, result.microseconds)
-        conn.print_result('get_to_user', tos, num=1)
 
     if args.op == 0 or args.op == 3:
         # getting docs with a word in body
@@ -113,8 +113,7 @@ if __name__ == '__main__':
         word_body = 'Compass'
         time1 = datetime.now()
         bodies = conn.get_word_in_body_complex(word_body, NUM_RESULTS)
+        conn.print_result('get_word_in_body_complex', bodies, NUM_RESULTS)
         time2 = datetime.now()
         result = time2 - time1
-        print "ElastisSearch complex query time (microseconds): %f" % (result.microseconds)
-        print "%s query time (microseconds): %f" % (conn_name, result.microseconds)
-        conn.print_result('get_word_in_body_complex', bodies, NUM_RESULTS)
+        print "%s complex query time (microseconds): %f" % (conn_name, result.microseconds)

@@ -66,9 +66,7 @@ class MongoConnection(Connector):
             JSON with resulting entries
         '''
         mongo_con = MongoConnection.get_connector()
-        res = mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_TO: user})
-        print res.count
-        return res
+        return mongo_con.mongo.find({ElasticMongo.ELASTIC_TYPE_TO: user})
 
     def get_word_in_body(self, word):
         '''
