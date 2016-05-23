@@ -66,7 +66,7 @@ if __name__ == '__main__':
                         dest='system',
                         default='E',
                         choices=['M', 'E'],
-                        help='"M": mongo, "E": elastic or "B": both(default)',
+                        help='"M": mongo, "E": elastic',
                         required=False)
 
     args = parser.parse_args()

@@ -231,6 +231,6 @@ if __name__ == '__main__':
         time2 = datetime.now()
         result = time2 - time1
         print "ElastisSearch suggest time (microseconds): %f" % (result.microseconds)
-        print "Suggestions in ES for %s in its body" % (text)
+        print "Suggestions in ES for '%s' (body field)" % (text)
         for suggest in suggestions[ELASTIC_SUGGEST_REQUEST]:
             print suggest

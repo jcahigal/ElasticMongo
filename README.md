@@ -8,8 +8,78 @@ Installed in C:\elasticsearch-2.1.1\bin
 
 data:  
 	C:\elasticsearch-2.1.1\data  
+	
+	
+* TU conf  
+/tu/gob
 
+PUT http://localhost:9200/tu
+{
+    "mappings": {
+      "gob": {
+        "properties": {
+          "request_timestamp": {
+            "type": "date",
+            "format": "yyyy-MM-dd HH:mm:ss"
+          },
+          "date": {
+            "type": "date",
+            "format": "yyyy-MM-dd HH:mm:ss"
+          },
+          "module": {
+            "type": "string"
+          },
+          "new_correlator": {
+            "properties": {
+              "flow_id": {
+                "type": "string"
+              },
+              "originator": {
+                "type": "string"
+              },
+              "sampler": {
+                "type": "string"
+              },
+              "unique_token": {
+                "type": "string"
+              },
+              "user": {
+                "type": "string"
+              }
+            }
+          },
+          "old_correlator": {
+            "properties": {
+              "OB": {
+                "type": "string"
+              },
+              "location": {
+                "type": "geo_point"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "tick_code": {
+            "type": "string"
+          },
+          "tick_type": {
+            "type": "string"
+          },
+          "time": {
+            "type": "float"
+          }
+        }
+      }
+    }
+  }
 
+  
+  
 Kibana  
 -------  
 Kibana is installed in C:\kibana-4.3.1-windows\bin  
